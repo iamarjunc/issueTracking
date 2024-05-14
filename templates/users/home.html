@@ -1,0 +1,446 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for accordion */
+.accordion-item {
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.accordion-button {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.accordion-button:hover {
+    background-color: #0056b3;
+}
+
+.accordion-body {
+    padding: 10px;
+}
+/* Animation for accordion collapse */
+.accordion-collapse {
+    transition: height 0.3s ease;
+}
+
+.accordion-collapse.collapsing {
+    height: 0;
+}
+
+        body {
+            background-color: #f8f9fa;
+            padding-top: 60px; /* Add padding to account for navbar height */
+        }
+        .navbar {
+            background-color: #007bff;
+        }
+        .navbar-brand, .navbar-nav .nav-link {
+            color: #fff;
+        }
+        .navbar-brand:hover, .navbar-nav .nav-link:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Bootstrap Navbar -->
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top">
+        <a class="navbar-brand" href="#" id="homeNav">Issue Tracking</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" id="usr-nav" href="#">User</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="project-nav" href="#">Project</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="issues-nav" href="#">Issues</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="issue-nav" href="#">Issue Request</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <span class="nav-link"> <b>{{ user }}</b></span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <!-- Greeting Message with User's Name -->
+                        <h3>Hello, {{ user }}</h3>
+                        <p>Welcome to My App. This is your personalized home page.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Project Form -->
+    <div class="row justify-content-center mt-5" id="project-div" style="display: none;">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Add New Project</h5>
+                    <form id="add-project-form" method="POST" >
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="project_name">Project Name</label>
+                            <input type="text" class="form-control" id="project_name" name="project_name" required>
+                        </div>
+                        <button type="submit"  class="btn btn-primary">Add Project</button>
+                    </form>
+                    <!-- Project List -->
+                    <h5 class="card-title mt-4">Project List</h5>
+                    <ul id="project-list"  class="list-group list-group-flush">
+                        <!-- Project list items will be added dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Issue Form -->
+    <div class="row justify-content-center mt-5" id="issue-div" style="display: none;">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Add New Issue</h5>
+                    <form id="add-issue-form">
+                        <div class="form-group">
+                            <label for="project_select">Project</label>
+                            <select class="form-control" id="project_select" required>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="module">Module</label>
+                            <input type="text" class="form-control" id="module" name="module" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="issue_type_select">Issue Type</label>
+                            <select class="form-control" id="issue_type_select" required>
+                                <option value="bug">Bug</option>
+                                <option value="validation">Validation</option>
+                                <option value="ui">UI</option>
+                                <option value="messaging">Messaging</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="problem">Problem</label>
+                            <input type="text" class="form-control" id="problem" name="problem" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="assigned_to">Assigned To</label>
+                            <select class="form-control" id="assigned_to" name="assigned_to" required>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Add Issue</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue List -->
+    <div class="row justify-content-center mt-5" id="issue-list-div" style="display: none;">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Issue List</h5>
+                    <div id="issue-list" class="accordion"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User List Container -->
+    <div class="row justify-content-center mt-5" id="user-div" style="display: none;">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">User List</h5>
+                    <!-- Display user list here -->
+                    <ul id="user-list"  class="list-group">
+                        <!-- User list items will be added dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and jQuery (for Navbar toggle) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            // Show the corresponding div when the navbar link is clicked
+            $("#project-nav").click(function(){
+                showDiv("project-div");
+                $.ajax({
+                    url: '/get_project_list/', // Replace with your backend API endpoint URL
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        console.log(data);
+                        var projectList = $("#project-list"); // Assuming you have a project-list element in your project-div
+                        projectList.empty(); // Clear existing list
+                        
+                        // Populate project list dynamically
+                        data.forEach(function(project) {
+                            projectList.append('<li class="list-group-item">' + project.name + "</li>"); // Assuming project object has 'name' field
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to fetch project data: " + error);
+                    }
+                });
+            });
+
+            $("#issue-nav").click(function(){
+                showDiv("issue-div");
+                populateProjects();
+                populateUsers(); // Populate users dropdown
+                fetchAndDisplayIssues();
+            });
+            
+            $("#issues-nav").click(function(){
+                showDiv("issue-list-div");
+                populateProjects();
+                populateUsers(); // Populate users dropdown
+                fetchAndDisplayIssues();
+            });
+            
+
+            $("#usr-nav").click(function(){
+                showDiv("user-div");
+                fetchAndDisplayUsers();
+            });
+
+            $("#homeNav").click(function(){
+                showDiv("container");
+            });
+
+            // Function to show a specific div and hide others
+            function showDiv(divId) {
+                $("#project-div, #issue-div,#issue-list-div, #user-div, .container").hide();
+                $("#" + divId).show();
+            }
+
+            // Function to populate users dropdown
+            function populateUsers() {
+                $.ajax({
+                    url: '/get_user_list/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        var assignedToSelect = $("#assigned_to");
+                        assignedToSelect.empty();
+                        $.each(data, function(index, user) {
+                            assignedToSelect.append("<option value='" + user.id + "'>" + user.username + "</option>");
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to fetch user data: " + error);
+                    }
+                });
+            }
+
+            // Function to populate projects dropdown
+            function populateProjects() {
+                $.ajax({
+                    url: '/get_project_list/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        console.log(data);
+                        var projectSelect = $("#project_select");
+                        projectSelect.empty();
+                        $.each(data, function(index, project) {
+                            projectSelect.append("<option value='" + project.id + "'>" + project.name + "</option>");
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to fetch project data: " + error);
+                    }
+                });
+            }
+
+            // Function to fetch and display issues
+            function fetchAndDisplayIssues() {
+                $.ajax({
+                    url: '/get_issue_list/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        var issueList = $("#issue-list");
+                        issueList.empty(); // Clear existing list items
+                        
+                        // Iterate through each issue in the data
+                        $.each(data, function(index, issue) {
+                            // Create accordion item
+                            var accordionItem = $('<div class="accordion-item"></div>');
+            
+                            // Create accordion header
+                            var accordionHeader = $('<h4 class="accordion-header"></h4>');
+                            var accordionButton = $('<button class="accordion-button" type="button" data-bs-toggle="collapse"></button>');
+                            accordionButton.attr('data-bs-target', '#collapse' + index); // Unique collapse ID
+                            accordionButton.attr('aria-expanded', index === 0 ? 'true' : 'false'); // Expand first item by default
+                            accordionButton.attr('aria-controls', 'collapse' + index);
+                            accordionButton.text('Issue ' + (index + 1)); // Customize the accordion button text as per your requirement
+                            accordionHeader.append(accordionButton);
+                            accordionItem.append(accordionHeader);
+            
+                            // Create accordion body (collapse content)
+                            var accordionBody = $('<div class="accordion-collapse collapse"></div>');
+                            accordionBody.attr('id', 'collapse' + index);
+                            accordionBody.attr('data-bs-parent', '#issue-list');
+            
+                            var accordionBodyContent = $('<div class="accordion-body"></div>');
+            
+                            // Iterate through each field in the issue object and add to accordion body
+                            $.each(issue, function(key, value) {
+                                var fieldHtml = '<p><strong>' + capitalize(key) + ':</strong> ' + value + '</p>';
+                                accordionBodyContent.append(fieldHtml);
+                            });
+            
+                            accordionBody.append(accordionBodyContent);
+                            accordionItem.append(accordionBody);
+            
+                            // Append the accordion item to the issueList
+                            issueList.append(accordionItem);
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to fetch issue data: " + error);
+                    }
+                });
+                var accordionButton = $('<button class="accordion-button" type="button" data-bs-toggle="collapse"></button>');
+accordionButton.attr('data-bs-toggle', 'collapse');  // Set data-bs-toggle attribute
+accordionButton.attr('data-bs-target', '#collapse' + index);  // Set data-bs-target attribute
+
+            }
+            
+            // Helper function to capitalize the first letter of a string
+            function capitalize(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+            
+            
+            // Helper function to capitalize the first letter of a string
+            function capitalize(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+            
+            
+
+            // Function to fetch and display users
+            function fetchAndDisplayUsers() {
+                $.ajax({
+                    url: '/get_user_list/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        var userList = $("#user-list");
+                        userList.empty();
+                        $.each(data, function(index, user) {
+                            userList.append('<li class="list-group-item">' + user.username + "</li>");
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to fetch user data: " + error);
+                    }
+                });
+            }
+
+            $(document).on('click', '.accordion-button', function() {
+                var target = $(this).data('bs-target');
+                $(target).collapse('toggle');
+            });
+            
+            $("#add-project-form").submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+                
+                var prjdata = {
+                    project_name: $("#project_name").val()
+                };
+        
+                $.ajax({
+                    url: '/add_project/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: prjdata,
+                    success: function(data) {
+                        alert("Project added successfully"); // Show success message
+                        // Optionally, update the project list dynamically if needed
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to add project: " + error);
+                    }
+                });
+        
+                return false; // Prevent the form from submitting in the default way
+            });
+            // Submit form to add an issue
+            $("#add-issue-form").submit(function(event) {
+                event.preventDefault();
+            
+                // Retrieve numeric IDs directly from the dropdowns
+                var formData = {
+                    project_id: $("#project_select").val(),       // Numeric project ID
+                    module: $("#module").val(),
+                    issue_type: $("#issue_type_select").val(),
+                    problem: $("#problem").val(),
+                    assigned_to: $("#assigned_to").val()          // Numeric user ID
+                };
+            
+                $.ajax({
+                    url: '/add_issue/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: formData,
+                    success: function(data) {
+                        console.log("Issue added successfully:", data);
+                        fetchAndDisplayIssues(); // Refresh issue list
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to add issue: " + error);
+                    }
+                });
+            });
+            
+            
+        });
+
+        
+    </script>
+</body>
+</html>
