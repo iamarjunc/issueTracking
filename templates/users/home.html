@@ -10,33 +10,27 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Custom styles for accordion */
-.accordion-item {
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.accordion-button {
-    background-color: #007bff;
-    color: #fff;
-}
-
-.accordion-button:hover {
-    background-color: #0056b3;
-}
-
-.accordion-body {
-    padding: 10px;
-}
-/* Animation for accordion collapse */
-.accordion-collapse {
-    transition: height 0.3s ease;
-}
-
-.accordion-collapse.collapsing {
-    height: 0;
-}
-
+        .accordion-item {
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .accordion-button {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .accordion-button:hover {
+            background-color: #0056b3;
+        }
+        .accordion-body {
+            padding: 10px;
+        }
+        .accordion-collapse {
+            transition: height 0.3s ease;
+        }
+        .accordion-collapse.collapsing {
+            height: 0;
+        }
         body {
             background-color: #f8f9fa;
             padding-top: 60px; /* Add padding to account for navbar height */
@@ -49,6 +43,10 @@
         }
         .navbar-brand:hover, .navbar-nav .nav-link:hover {
             color: #fff;
+        }
+        .designation {
+            font-size: small;
+            color: #7b7b7b;
         }
     </style>
 </head>
@@ -76,7 +74,7 @@
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <span class="nav-link"> <b>{{ user }}</b></span>
+                    <span class="nav-link"><b>{{ user }}</b></span>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
@@ -90,7 +88,6 @@
             <div class="col-md-8">
                 <div class="card mt-5">
                     <div class="card-body">
-                        <!-- Greeting Message with User's Name -->
                         <h3>Hello, {{ user }}</h3>
                         <p>Welcome to My App. This is your personalized home page.</p>
                     </div>
@@ -105,17 +102,16 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Add New Project</h5>
-                    <form id="add-project-form" method="POST" >
+                    <form id="add-project-form" method="POST">
                         {% csrf_token %}
                         <div class="form-group">
                             <label for="project_name">Project Name</label>
                             <input type="text" class="form-control" id="project_name" name="project_name" required>
                         </div>
-                        <button type="submit"  class="btn btn-primary">Add Project</button>
+                        <button type="submit" class="btn btn-primary">Add Project</button>
                     </form>
-                    <!-- Project List -->
                     <h5 class="card-title mt-4">Project List</h5>
-                    <ul id="project-list"  class="list-group list-group-flush">
+                    <ul id="project-list" class="list-group list-group-flush">
                         <!-- Project list items will be added dynamically -->
                     </ul>
                 </div>
@@ -129,10 +125,11 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Add New Issue</h5>
-                    <form id="add-issue-form">
+                    <form id="add-issue-form" method="POST">
+                        {% csrf_token %}
                         <div class="form-group">
                             <label for="project_select">Project</label>
-                            <select class="form-control" id="project_select" required>
+                            <select class="form-control" id="project_select" name="project_id" required>
                                 <!-- Options will be populated dynamically -->
                             </select>
                         </div>
@@ -142,7 +139,7 @@
                         </div>
                         <div class="form-group">
                             <label for="issue_type_select">Issue Type</label>
-                            <select class="form-control" id="issue_type_select" required>
+                            <select class="form-control" id="issue_type_select" name="issue_type" required>
                                 <option value="bug">Bug</option>
                                 <option value="validation">Validation</option>
                                 <option value="ui">UI</option>
@@ -159,7 +156,6 @@
                                 <!-- Options will be populated dynamically -->
                             </select>
                         </div>
-                        
                         <button type="submit" class="btn btn-primary">Add Issue</button>
                     </form>
                 </div>
@@ -174,22 +170,45 @@
                 <div class="card-body">
                     <h5 class="card-title">Issue List</h5>
                     <div id="issue-list" class="accordion"></div>
-
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add User List Container -->
+    <!-- User List -->
     <div class="row justify-content-center mt-5" id="user-div" style="display: none;">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">User List</h5>
-                    <!-- Display user list here -->
-                    <ul id="user-list"  class="list-group">
+                    <ul id="user-list" class="list-group">
                         <!-- User list items will be added dynamically -->
                     </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Project Team Modal -->
+    <!-- Project Team Modal -->
+    <div class="modal fade" id="projectTeamModal" tabindex="-1" role="dialog" aria-labelledby="projectTeamModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="projectTeamModalLabel">Project Team</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="projectTeamForm">
+                        <ul id="project-team-list" class="list-group">
+                            <!-- Team members will be populated here dynamically -->
+                        </ul>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="selectUsersBtn">Select Users</button>
                 </div>
             </div>
         </div>
@@ -201,245 +220,278 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <script>
-        $(document).ready(function(){
-            // Show the corresponding div when the navbar link is clicked
-            $("#project-nav").click(function(){
-                showDiv("project-div");
-                $.ajax({
-                    url: '/get_project_list/', // Replace with your backend API endpoint URL
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        console.log(data);
-                        var projectList = $("#project-list"); // Assuming you have a project-list element in your project-div
-                        projectList.empty(); // Clear existing list
-                        
-                        // Populate project list dynamically
-                        data.forEach(function(project) {
-                            projectList.append('<li class="list-group-item">' + project.name + "</li>"); // Assuming project object has 'name' field
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Failed to fetch project data: " + error);
-                    }
-                });
-            });
-
-            $("#issue-nav").click(function(){
-                showDiv("issue-div");
-                populateProjects();
-                populateUsers(); // Populate users dropdown
-                fetchAndDisplayIssues();
-            });
-            
-            $("#issues-nav").click(function(){
-                showDiv("issue-list-div");
-                populateProjects();
-                populateUsers(); // Populate users dropdown
-                fetchAndDisplayIssues();
-            });
-            
-
-            $("#usr-nav").click(function(){
-                showDiv("user-div");
-                fetchAndDisplayUsers();
-            });
-
-            $("#homeNav").click(function(){
-                showDiv("container");
-            });
-
-            // Function to show a specific div and hide others
+        let selectedUsersData = {
+            table_data: []
+        };
+        $(document).ready(function () {
             function showDiv(divId) {
-                $("#project-div, #issue-div,#issue-list-div, #user-div, .container").hide();
+                $("#project-div, #issue-div, #issue-list-div, #user-div, .container").hide();
                 $("#" + divId).show();
             }
-
-            // Function to populate users dropdown
-            function populateUsers() {
-                $.ajax({
-                    url: '/get_user_list/',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        var assignedToSelect = $("#assigned_to");
-                        assignedToSelect.empty();
-                        $.each(data, function(index, user) {
-                            assignedToSelect.append("<option value='" + user.id + "'>" + user.username + "</option>");
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Failed to fetch user data: " + error);
-                    }
-                });
-            }
-
-            // Function to populate projects dropdown
-            function populateProjects() {
-                $.ajax({
-                    url: '/get_project_list/',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        console.log(data);
-                        var projectSelect = $("#project_select");
-                        projectSelect.empty();
-                        $.each(data, function(index, project) {
-                            projectSelect.append("<option value='" + project.id + "'>" + project.name + "</option>");
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Failed to fetch project data: " + error);
-                    }
-                });
-            }
-
-            // Function to fetch and display issues
-            function fetchAndDisplayIssues() {
-                $.ajax({
-                    url: '/get_issue_list/',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        var issueList = $("#issue-list");
-                        issueList.empty(); // Clear existing list items
-                        
-                        // Iterate through each issue in the data
-                        $.each(data, function(index, issue) {
-                            // Create accordion item
-                            var accordionItem = $('<div class="accordion-item"></div>');
-            
-                            // Create accordion header
-                            var accordionHeader = $('<h4 class="accordion-header"></h4>');
-                            var accordionButton = $('<button class="accordion-button" type="button" data-bs-toggle="collapse"></button>');
-                            accordionButton.attr('data-bs-target', '#collapse' + index); // Unique collapse ID
-                            accordionButton.attr('aria-expanded', index === 0 ? 'true' : 'false'); // Expand first item by default
-                            accordionButton.attr('aria-controls', 'collapse' + index);
-                            accordionButton.text('Issue ' + (index + 1)); // Customize the accordion button text as per your requirement
-                            accordionHeader.append(accordionButton);
-                            accordionItem.append(accordionHeader);
-            
-                            // Create accordion body (collapse content)
-                            var accordionBody = $('<div class="accordion-collapse collapse"></div>');
-                            accordionBody.attr('id', 'collapse' + index);
-                            accordionBody.attr('data-bs-parent', '#issue-list');
-            
-                            var accordionBodyContent = $('<div class="accordion-body"></div>');
-            
-                            // Iterate through each field in the issue object and add to accordion body
-                            $.each(issue, function(key, value) {
-                                var fieldHtml = '<p><strong>' + capitalize(key) + ':</strong> ' + value + '</p>';
-                                accordionBodyContent.append(fieldHtml);
-                            });
-            
-                            accordionBody.append(accordionBodyContent);
-                            accordionItem.append(accordionBody);
-            
-                            // Append the accordion item to the issueList
-                            issueList.append(accordionItem);
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Failed to fetch issue data: " + error);
-                    }
-                });
-                var accordionButton = $('<button class="accordion-button" type="button" data-bs-toggle="collapse"></button>');
-accordionButton.attr('data-bs-toggle', 'collapse');  // Set data-bs-toggle attribute
-accordionButton.attr('data-bs-target', '#collapse' + index);  // Set data-bs-target attribute
-
-            }
-            
-            // Helper function to capitalize the first letter of a string
+        
             function capitalize(str) {
                 return str.charAt(0).toUpperCase() + str.slice(1);
             }
-            
-            
-            // Helper function to capitalize the first letter of a string
-            function capitalize(str) {
-                return str.charAt(0).toUpperCase() + str.slice(1);
-            }
-            
-            
-
-            // Function to fetch and display users
-            function fetchAndDisplayUsers() {
+        
+            function populateDropdown(url, $dropdown, placeholder) {
                 $.ajax({
-                    url: '/get_user_list/',
+                    url: url,
                     type: 'GET',
                     dataType: 'json',
-                    success: function(data) {
-                        var userList = $("#user-list");
-                        userList.empty();
-                        $.each(data, function(index, user) {
-                            userList.append('<li class="list-group-item">' + user.username + "</li>");
+                    success: function (data) {
+                        $dropdown.empty();
+                        $dropdown.append(`<option value="" disabled selected>${placeholder}</option>`);
+                        $.each(data, function (index, item) {
+                            $dropdown.append(`<option value="${item.id}">${item.name || item.username}</option>`);
                         });
                     },
-                    error: function(xhr, status, error) {
-                        console.error("Failed to fetch user data: " + error);
+                    error: function () {
+                        alert("Error loading data. Please try again.");
                     }
                 });
             }
-
-            $(document).on('click', '.accordion-button', function() {
-                var target = $(this).data('bs-target');
-                $(target).collapse('toggle');
-            });
-            
-            $("#add-project-form").submit(function(event) {
-                event.preventDefault(); // Prevent default form submission
-                
-                var prjdata = {
-                    project_name: $("#project_name").val()
-                };
-        
+            function loadProjects() {
                 $.ajax({
-                    url: '/add_project/',
-                    type: 'POST',
+                    url: "{% url 'get_project_list' %}",
+                    type: 'GET',
                     dataType: 'json',
-                    data: prjdata,
-                    success: function(data) {
-                        alert("Project added successfully"); // Show success message
-                        // Optionally, update the project list dynamically if needed
+                    success: function (data) {
+                        $('#project-list').empty();
+                        $.each(data, function (index, project) {
+                            $('#project-list').append(`
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${project.name}
+                                    <div>
+                                        <button class="btn btn-info btn-sm project-team-btn" data-project-id="${project.id}" data-toggle="modal" data-target="#projectTeamModal">Project Team</button>
+                                        <button class="btn btn-info btn-sm show-team-members-btn" data-project-id="${project.id}">Show Team Members</button>
+                                        <button class="btn btn-danger btn-sm delete-project-btn" data-project-id="${project.id}">Delete</button>
+                                    </div>
+                                </li>`);
+                        });
+        
+                        // Attach click event to the Project Team buttons
+                        $('.project-team-btn').click(function () {
+                            const projectId = $(this).data('project-id');
+                            loadProjectTeam(projectId);
+                        });
+        
+                        // Attach click event to the Delete buttons
+                        $('.delete-project-btn').click(function () {
+                            const projectId = $(this).data('project-id');
+                            
+                            if (confirm("Are you sure you want to delete this project?")) {
+                                deleteProject(projectId);
+                            }
+                        });
                     },
-                    error: function(xhr, status, error) {
-                        console.error("Failed to add project: " + error);
+                    error: function () {
+                        alert("Error loading projects. Please try again.");
                     }
                 });
+            }
+            function loadProjectTeam(projectId) {
+                $.ajax({
+                    url: "{% url 'get_user_list' %}",
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { 'project_id': projectId },
+                    success: function (data) {
+                        $('#project-team-list').empty();
+                        $.each(data, function (index, user) {
+                            $('#project-team-list').append(`<li class="list-group-item">
+                                <input type="checkbox" name="selectedUsers" value="${user.id}" data-prjid="${projectId}" data-username="${user.username}" id="user_${user.id}">
+                                <label for="user_${user.id}">${user.username} <span class="designation">(${user.user_type})</span></label>
+                            </li>`);
+                        });
+                    },
+                    error: function () {
+                        alert("Error loading project team. Please try again.");
+                    }
+                });
+            }
+            
+            
+            
+            
+// Button click event to select users
+$('#selectUsersBtn').click(function () {
+    // Retrieve existing selected users data or initialize as an empty array
+    let selectedUsers = selectedUsersData.table_data;
+
+    // Add new selected users
+    const newSelectedUsers = $('input[name="selectedUsers"]:checked').map(function () {
+        return {
+            prjid: $(this).data('prjid'),
+            id: this.value,
+            username: $(this).data('username')
+        };
+    }).get();
+
+    // Filter out duplicate users and update existing ones with the most recent values
+    newSelectedUsers.forEach(newUser => {
+        const index = selectedUsers.findIndex(user => user.id === newUser.id && user.prjid === newUser.prjid);
+        if (index !== -1) {
+            // Update existing user with the most recent values
+            selectedUsers[index] = newUser;
+        } else {
+            // Add new user if not already present
+            selectedUsers.push(newUser);
+        }
+    });
+
+    // Update the selectedUsersData variable with the new data
+    selectedUsersData.table_data = selectedUsers;
+
+    // Print selectedUsersData for verification
+    console.log(selectedUsersData);
+
+    // Close the modal
+    $('#projectTeamModal').modal('hide');
+});
+            
+            function loadUsers() {
+                $.ajax({
+                    url: "{% url 'get_user_list' %}",
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#user-list').empty();
+                        $.each(data, function (index, user) {
+                            $('#user-list').append(`
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${user.username} <span class="designation">(${user.user_type})</span>
+                                    <button class="btn btn-danger btn-sm delete-user-btn" data-user-id="${user.id}">Delete</button>
+                                </li>`);
+                        });
+                    },
+                    error: function () {
+                        alert("Error loading users. Please try again.");
+                    }
+                });
+            }
         
-                return false; // Prevent the form from submitting in the default way
-            });
-            // Submit form to add an issue
-            $("#add-issue-form").submit(function(event) {
+            function loadIssues() {
+                $.ajax({
+                    url: "{% url 'get_issue_list' %}",
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#issue-list').empty();
+                        $.each(data, function (index, issue) {
+                            const issueId = `issue-${index}`;
+                            const card = `
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading${issueId}">
+                                        <button class="accordion-button" type="button" data-toggle="collapse" data-target="#collapse${issueId}" aria-expanded="true" aria-controls="collapse${issueId}">
+                                            ${issue.module} - ${capitalize(issue.issue_type)}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse${issueId}" class="accordion-collapse collapse" aria-labelledby="heading${issueId}" data-parent="#issue-list">
+                                        <div class="accordion-body">
+                                            <p><strong>Problem:</strong> ${issue.problem}</p>
+                                            <p><strong>Issue Type:</strong> ${issue.issue_type}</p>
+                                            <p><strong>Module:</strong> ${issue.module}</p>
+                                            <p><strong>Assigned To:</strong> ${issue.assigned_to}</p>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            $('#issue-list').append(card);
+                        });
+                    },
+                    error: function () {
+                        alert("Error loading issues. Please try again.");
+                    }
+                });
+            }
+        
+            function handleFormSubmit(event, formId, url, successCallback) {
                 event.preventDefault();
-            
-                // Retrieve numeric IDs directly from the dropdowns
-                var formData = {
-                    project_id: $("#project_select").val(),       // Numeric project ID
-                    module: $("#module").val(),
-                    issue_type: $("#issue_type_select").val(),
-                    problem: $("#problem").val(),
-                    assigned_to: $("#assigned_to").val()          // Numeric user ID
-                };
-            
+                const $form = $(formId);
+                const data = $form.serialize();
                 $.ajax({
-                    url: '/add_issue/',
+                    url: url,
                     type: 'POST',
+                    data: data,
                     dataType: 'json',
-                    data: formData,
-                    success: function(data) {
-                        console.log("Issue added successfully:", data);
-                        fetchAndDisplayIssues(); // Refresh issue list
+                    success: function (response) {
+                        successCallback();
+                        $form.trigger("reset");
                     },
-                    error: function(xhr, status, error) {
-                        console.error("Failed to add issue: " + error);
+                    error: function () {
+                        alert("Error submitting form. Please try again.");
                     }
                 });
+            }
+        
+            function deleteUser(userId) {
+                $.ajax({
+                    url: "{% url 'delete_user' %}",
+                    type: 'POST',
+                    data: {
+                        'user_id': userId,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token if required
+                    },
+                    success: function (response) {
+                        loadUsers(); // Reload the user list after successful deletion
+                    },
+                    error: function () {
+                        alert("Error deleting user. Please try again.");
+                    }
+                });
+            }
+        
+            function deleteProject(projectId) {
+                $.ajax({
+                    url: "{% url 'delete_project' %}",
+                    type: 'POST',
+                    data: {
+                        'project_id': projectId,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token if required
+                    },
+                    success: function (response) {
+                        loadProjects(); // Reload the project list after successful deletion
+                    },
+                    error: function () {
+                        alert("Error deleting project. Please try again.");
+                    }
+                });
+            }
+        
+            // Navbar click handlers
+            $('#homeNav').click(() => showDiv('container'));
+            $('#project-nav').click(() => {
+                showDiv('project-div');
+                loadProjects();
             });
-            
+            $('#issue-nav').click(() => {
+                showDiv('issue-div');
+                populateDropdown("{% url 'get_project_list' %}", $('#project_select'), "Select Project");
+                populateDropdown("{% url 'get_dev_list' %}", $('#assigned_to'), "Select User");
+            });
+            $('#issues-nav').click(() => {
+                showDiv('issue-list-div');
+                loadIssues();
+            });
+            $('#usr-nav').click(() => {
+                showDiv('user-div');
+                loadUsers();
+            });
+        
+            // Form submit handlers
+            $('#add-project-form').submit(event => handleFormSubmit(event, '#add-project-form', "{% url 'add_project' %}", loadProjects));
+            $('#add-issue-form').submit(event => handleFormSubmit(event, '#add-issue-form', "{% url 'add_issue' %}", loadIssues));
+        
+            // Delete user handler
+            $(document).on('click', '.delete-user-btn', function () {
+                const userId = $(this).data('user-id');
+                if (confirm("Are you sure you want to delete this user?")) {
+                    deleteUser(userId);
+                }
+            });
+        
             
         });
-
+        
         
     </script>
 </body>

@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.0.16','*']
 
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Application definition
 

@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
@@ -7,23 +7,28 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from .models import Project,Issue  # Import your Project model
+from .models import Project,Issue,CustomUser  # Import your Project model
 from django.apps import apps
 from django.core import serializers
+@csrf_exempt
 def registerPage(request):
     if request.user.is_authenticated:
         return redirect('home')
     else:
-        form = CreateUserForm
-        if request.method =='POST':
+        form = CreateUserForm()
+        if request.method == 'POST':
             form = CreateUserForm(request.POST)
+            print("Form Data:", request.POST)  # Print form data
+            print("User Type Choices:", form.fields['user_type'].choices)  # Print choices
             if form.is_valid():
                 form.save()
                 user = form.cleaned_data.get('username')
                 messages.success(request, f'Hello {user}, Registration successful. Please log in.')
-                return redirect('login')  # Redirect to the login page
+                return redirect('login')
+            else:
+                print(form.errors)  # Print form errors
         context = {'form': form}    
-        return render(request, 'users/register.html',context)
+        return render(request, 'users/register.html', context)
 
 def loginPage(request):
     if request.user.is_authenticated:
@@ -50,7 +55,13 @@ def home(request):
     return render(request,'users/home.html')
 
 def get_user_list(request):
-    users = User.objects.all()  # Fetch all users from the database
+    users = CustomUser.objects.all()  # Fetch all users from the database
+    user_data = [{'username': user.username,'id':user.id,'user_type':user.user_type.upper()} for user in users]  # Extract username from each user object
+    return JsonResponse(user_data, safe=False)
+
+def get_dev_list(request):
+    users = CustomUser.objects.filter(user_type='Developer')  # Fetch all users from the database
+    print(users)
     user_data = [{'username': user.username,'id':user.id} for user in users]  # Extract username from each user object
     return JsonResponse(user_data, safe=False)
 
@@ -98,6 +109,26 @@ def get_issue_list(request):
     else:
         return JsonResponse({"error": "Only GET method is allowed"}, status=400)
 @csrf_exempt    
+
+def delete_user(request):
+    user_id = request.POST.get('user_id')
+    if not user_id:
+        return HttpResponseBadRequest("User ID not provided.")
+
+    user = get_object_or_404(CustomUser, id=user_id)
+    user.delete()
+    return JsonResponse({'message': 'User deleted successfully.'})
+@csrf_exempt    
+
+def delete_project(request):
+    project_id = request.POST.get('project_id')
+    if not project_id:
+        return HttpResponseBadRequest("Project ID not provided.")
+
+    project = get_object_or_404(Project, id=project_id)
+    project.delete()
+    return JsonResponse({'message': 'Project deleted successfully.'})
+@csrf_exempt    
 def add_issue(request):
     if request.method == 'POST':
         # Retrieve form data from AJAX POST request
@@ -111,7 +142,7 @@ def add_issue(request):
         project = get_object_or_404(Project, pk=project_id)
 
         # Retrieve User instance based on assigned_to_id
-        assigned_to = get_object_or_404(User, pk=assigned_to_id)
+        assigned_to = get_object_or_404(CustomUser, pk=assigned_to_id)
 
         # Create the Issue instance with validated data
         issue = Issue.objects.create(
